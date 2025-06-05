@@ -36,16 +36,7 @@ config/config.py
 *.cer
 *.keystore
 
-# Generated outputs
-output/
-output/reports/
-output/charts/
-*.pdf
-*.png
-*.jpg
-*.jpeg
-*.gif
-temp_*.json
+
 
 # Data files (exclude sensitive JSON inputs)
 data/
