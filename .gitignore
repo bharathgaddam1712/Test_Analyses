@@ -1,0 +1,118 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+build/
+dist/
+*.egg-info/
+*.egg
+pip-log.txt
+pip-delete-this-directory.txt
+*.whl
+
+# Virtual environments
+venv/
+env/
+.venv/
+ENV/
+*.env
+virtualenv/
+
+# Anaconda
+.conda/
+condaenv.*
+.anaconda/
+conda-meta/
+
+# Sensitive configuration
+config/config.py
+*.env
+*.key
+*.secret
+*.pem
+*.crt
+*.cer
+*.keystore
+
+# Generated outputs
+output/
+output/reports/
+output/charts/
+*.pdf
+*.png
+*.jpg
+*.jpeg
+*.gif
+temp_*.json
+
+# Data files (exclude sensitive JSON inputs)
+data/
+*.json
+
+# Flask-specific
+instance/
+*.log
+*.pid
+flask_session/
+
+# JavaScript/React
+node_modules/
+npm-debug.log
+yarn-error.log
+*.lock
+
+# IDE and editor files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
+*.swp
+*.swo
+*~
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# Testing and coverage
+.coverage
+*.cover
+.hypothesis/
+.tox/
+.pytest_cache/
+coverage.xml
+*.pytest
+
+# Documentation
+docs/_build/
+docs/build/
+*.rst
+*.mdx
+
+# Miscellaneous
+*.bak
+*.tmp
+*.temp
+*.cache
+.cache/
+*.old
+*.orig
+*.rej
+*.bak.*
+*.tmp.*
+
+# Allow specific project files
+!requirements.txt
+!README.md
+!LICENSE
+!app.py
+!src/*.py
+!static/*.html
+!static/*.css
+!static/*.js

@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Feedback System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/babel-standalone@6.26.0/babel.min.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Input Page Component
+        const InputPage = ({ onAnalyze }) => {
+            const [studentName, setStudentName] = useState('');
+            const [examTitle, setExamTitle] = useState('');
+            const [examDate, setExamDate] = useState('');
+            const [jsonFile, setJsonFile] = useState(null);
+
+            const handleFileChange = (e) => {
+                setJsonFile(e.target.files[0]);
+            };
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                if (!studentName || !examTitle || !examDate || !jsonFile) {
+                    alert('Please fill in all fields and upload a JSON file.');
+                    return;
+                }
+                const formData = new FormData();
+                formData.append('student_name', studentName);
+                formData.append('exam_title', examTitle);
+                formData.append('exam_date', examDate);
+                formData.append('json_file', jsonFile);
+
+                fetch('/api/analyze', {
+                    method: 'POST',
+                    body: formData,
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            alert(data.error);
+                        } else {
+                            onAnalyze(data);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while analyzing the test.');
+                    });
+            };
+
+            return (
+                <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md mt-10">
+                    <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">Student Feedback System</h1>
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Student Name</label>
+                            <input
+                                type="text"
+                                value={studentName}
+                                onChange={(e) => setStudentName(e.target.value)}
+                                className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="Enter student name"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Examination Title</label>
+                            <input
+                                type="text"
+                                value={examTitle}
+                                onChange={(e) => setExamTitle(e.target.value)}
+                                className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="Enter examination title"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Date of Exam</label>
+                            <input
+                                type="date"
+                                value={examDate}
+                                onChange={(e) => setExamDate(e.target.value)}
+                                className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Upload JSON File</label>
+                            <input
+                                type="file"
+                                accept=".json"
+                                onChange={handleFileChange}
+                                className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                            />
+                        </div>
+                        <button
+                            onClick={handleSubmit}
+                            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-200"
+                        >
+                            Analyze Your Test
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        // Analysis Page Component
+        const AnalysisPage = ({ analysisData, onDownload }) => {
+            const formatSuggestions = (suggestions) => {
+                return suggestions.map((suggestion, index) => {
+                    const parts = suggestion.split('*');
+                    const mainSuggestion = parts[0].trim().replace(/^\d+\.\s*/, '');
+                    const subPoints = parts.slice(1).map(sp => sp.trim()).filter(sp => sp);
+                    return (
+                        <div key={index} className="mb-4">
+                            <p className="font-bold">{mainSuggestion}</p>
+                            <ul className="list-disc pl-6">
+                                {subPoints.map((sp, i) => {
+                                    const [heading, ...description] = sp.split(':');
+                                    return (
+                                        <li key={i}>
+                                            <span className="font-semibold">{heading.trim()}</span>: {description.join(':').trim()}
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        </div>
+                    );
+                });
+            };
+
+            return (
+                <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md mt-10">
+                    <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">Academic Performance Feedback Report</h1>
+
+                    {/* Cover Page Content */}
+                    <div className="mb-8">
+                        <h2 className="text-2xl font-bold text-center">Test Analysis Report</h2>
+                        <p className="text-center mt-2"><strong>Student Name:</strong> {analysisData.student_name}</p>
+                        <p className="text-center"><strong>Examination:</strong> {analysisData.exam_title}</p>
+                        <p className="text-center"><strong>Date:</strong> {analysisData.exam_date}</p>
+                    </div>
+
+                    {/* Section 1: Personalized Introduction */}
+                    <div className="mb-8">
+                        <h3 className="text-xl font-semibold">1. Personalized Introduction</h3>
+                        <p className="mt-2">
+                            Hi {analysisData.student_name}, great job on completing {analysisData.exam_title}! It's fantastic that you're actively working to improve your skills. Your results show a good foundation, and with a few focused adjustments, you can really unlock your potential! Let's dive into your performance to identify areas where you excel and where we can make some strategic improvements.
+                        </p>
+                        <p className="mt-2">
+                            <strong>Total Time:</strong> {analysisData.test_info.totalTime || 'N/A'} min<br />
+                            <strong>Questions:</strong> {analysisData.test_info.totalQuestions || 'N/A'}<br />
+                            <strong>Total Marks:</strong> {analysisData.test_info.totalMarks || 'N/A'}
+                        </p>
+                        <table className="w-full border-collapse border border-gray-300 mt-4">
+                            <thead>
+                                <tr className="bg-blue-800 text-white">
+                                    <th className="border border-gray-300 p-2">Metric</th>
+                                    <th className="border border-gray-300 p-2">Value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {[
+                                    ['Time Taken', `${analysisData.test_info.totalTimeTaken || 'N/A'} sec`],
+                                    ['Marks Scored', analysisData.test_info.totalMarkScored || 'N/A'],
+                                    ['Attempted', analysisData.test_info.totalAttempted || 'N/A'],
+                                    ['Correct', analysisData.test_info.totalCorrect || 'N/A'],
+                                    ['Accuracy', `${analysisData.test_info.accuracy || 'N/A'}%`],
+                                ].map((row, i) => (
+                                    <tr key={i} className="bg-gray-100">
+                                        <td className="border border-gray-300 p-2 text-center">{row[0]}</td>
+                                        <td className="border border-gray-300 p-2 text-center">{row[1]}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                        {analysisData.charts.subject_accuracy && (
+                            <div className="mt-4">
+                                <p className="font-semibold">Subject-Wise Accuracy Overview</p>
+                                <img src={analysisData.charts.subject_accuracy} alt="Subject Accuracy Chart" className="w-full h-auto" />
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Section 2: Detailed Performance Breakdown */}
+                    <div className="mb-8">
+                        <h3 className="text-xl font-semibold">2. Detailed Performance Breakdown</h3>
+                        <p className="mt-2 font-bold">Overall:</p>
+                        <table className="w-full border-collapse border border-gray-300 mt-2">
+                            <thead>
+                                <tr className="bg-blue-800 text-white">
+                                    <th className="border border-gray-300 p-2">Metric</th>
+                                    <th className="border border-gray-300 p-2">Value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {[
+                                    ['Marks Scored', `${analysisData.test_info.totalMarkScored || 'N/A'}/${analysisData.test_info.totalMarks || 'N/A'} (${Math.round((analysisData.test_info.totalMarkScored || 0) / (analysisData.test_info.totalMarks || 1) * 100 * 10) / 10}%)`],
+                                    ['Attempted', `${analysisData.test_info.totalAttempted || 'N/A'}/${analysisData.test_info.totalQuestions || 'N/A'} (${Math.round((analysisData.test_info.totalAttempted || 0) / (analysisData.test_info.totalQuestions || 1) * 100 * 10) / 10}%)`],
+                                    ['Correct', `${analysisData.test_info.totalCorrect || 'N/A'}/${analysisData.test_info.totalAttempted || 'N/A'} (${Math.round((analysisData.test_info.totalCorrect || 0) / (analysisData.test_info.totalAttempted || 1) * 100 * 10) / 10}%)`],
+                                    ['Accuracy', `${analysisData.test_info.accuracy || 'N/A'}%`],
+                                ].map((row, i) => (
+                                    <tr key={i} className="bg-gray-100">
+                                        <td className="border border-gray-300 p-2 text-center">{row[0]}</td>
+                                        <td className="border border-gray-300 p-2 text-center">{row[1]}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                        <p className="mt-2">
+                            You completed the test well within the time limit of {analysisData.test_info.totalTime || 'N/A'} minutes, which is excellent!
+                        </p>
+                        <p className="mt-4 font-bold">Subject-wise:</p>
+                        <table className="w-full border-collapse border border-gray-300 mt-2">
+                            <thead>
+                                <tr className="bg-blue-800 text-white">
+                                    <th className="border border-gray-300 p-2">Subject</th>
+                                    <th className="border border-gray-300 p-2">Marks</th>
+                                    <th className="border border-gray-300 p-2">Attempted</th>
+                                    <th className="border border-gray-300 p-2">Correct</th>
+                                    <th className="border border-gray-300 p-2">Accuracy</th>
+                                    <th className="border border-gray-300 p-2">Avg Time/Question</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {Object.entries(analysisData.subjects).map(([subject, stats], i) => (
+                                    <tr key={i} className="bg-gray-100">
+                                        <td className="border border-gray-300 p-2 text-center">{subject}</td>
+                                        <td className="border border-gray-300 p-2 text-center">{stats.marks || 'N/A'}</td>
+                                        <td className="border border-gray-300 p-2 text-center">{stats.attempted || 'N/A'}</td>
+                                        <td className="border border-gray-300 p-2 text-center">{stats.correct || 'N/A'}</td>
+                                        <td className="border border-gray-300 p-2 text-center">{stats.accuracy || 'N/A'}%</td>
+                                        <td className="border border-gray-300 p-2 text-center">{stats.avg_time_per_question || 'N/A'} sec</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                        <p className="mt-2">{analysisData.subject_comments.replace(/<br\/>/g, '\n').split('\n').map(line => <span>{line}<br /></span>)}</p>
+                        <p className="mt-4 font-bold">Chapter-wise:</p>
+                        <table className="w-full border-collapse border border-gray-300 mt-2">
+                            <thead>
+                                <tr className="bg-blue-800 text-white">
+                                    <th className="border border-gray-300 p-2">Chapter (Subject)</th>
+                                    <th className="border border-gray-300 p-2">Attempted</th>
+                                    <th className="border border-gray-300 p-2">Correct</th>
+                                    <th className="border border-gray-300 p-2">Accuracy</th>
+                                    <th className="border border-gray-300 p-2">Avg Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {Object.entries(analysisData.chapters).map(([chapter, stats], i) => (
+                                    <tr key={i} className="bg-gray-100">
+                                        <td className="border border-gray-300 p-2 text-center">{chapter} ({stats.subject || 'N/A'})</td>
+                                        <td className="border border-gray-300 p-2 text-center">{stats.attempted || 'N/A'}</td>
+                                        <td className="border border-gray-300 p-2 text-center">{stats.correct || 'N/A'}</td>
+                                        <td className="border border-gray-300 p-2 text-center">{stats.accuracy || 'N/A'}%</td>
+                                        <td className="border border-gray-300 p-2 text-center">{stats.avg_time || 'N/A'} sec</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                        {analysisData.chapter_comments && (
+                            <p className="mt-2">{analysisData.chapter_comments.replace(/<br\/>/g, '\n').split('\n').map(line => <span>{line}<br /></span>)}</p>
+                        )}
+                    </div>
+
+                    {/* Section 3: Time vs. Accuracy Insights */}
+                    <div className="mb-8">
+                        <h3 className="text-xl font-semibold">3. Time vs. Accuracy Insights</h3>
+                        <p className="mt-2">{analysisData.insights.replace(/<br\/>/g, '\n').split('\n').map(line => <span>{line}<br /></span>)}</p>
+                        <p className="mt-4 font-semibold">Subject-Wise Performance Chart</p>
+                        {['Physics', 'Chemistry', 'Maths'].map(subject => (
+                            analysisData.charts[subject.toLowerCase()] && (
+                                <div key={subject} className="mt-2">
+                                    <img src={analysisData.charts[subject.toLowerCase()]} alt={`${subject} Chart`} className="w-full h-auto" />
+                                </div>
+                            )
+                        ))}
+                    </div>
+
+                    {/* Section 4: Actionable Suggestions for Improvement */}
+                    <div className="mb-8">
+                        <h3 className="text-xl font-semibold">4. Actionable Suggestions for Improvement</h3>
+                        <p className="mt-2">Hey {analysisData.student_name}, let's take your performance to the next level with these tailored strategies:</p>
+                        {formatSuggestions(analysisData.suggestions)}
+                    </div>
+
+                    {/* Section 5: Final Encouragement */}
+                    <div className="mb-8">
+                        <h3 className="text-xl font-semibold">5. Final Encouragement</h3>
+                        <p className="mt-2">{analysisData.closing}</p>
+                    </div>
+
+                    {/* Download Button */}
+                    <button
+                        onClick={onDownload}
+                        className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition duration-200"
+                    >
+                        Download the PDF
+                    </button>
+                </div>
+            );
+        };
+
+        // Main App Component
+        const App = () => {
+            const [page, setPage] = useState('input');
+            const [analysisData, setAnalysisData] = useState(null);
+
+            const handleAnalyze = (data) => {
+                setAnalysisData(data);
+                setPage('analysis');
+            };
+
+            const handleDownload = () => {
+                fetch('/api/download', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pdf_path: analysisData.pdf_path }),
+                })
+                    .then(response => response.blob())
+                    .then(blob => {
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `Analysis_${analysisData.student_name}.pdf`;
+                        document.body.appendChild(a);
+                        a.click();
+                        a.remove();
+                        window.URL.revokeObjectURL(url);
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while downloading the PDF.');
+                    });
+            };
+
+            return (
+                <div>
+                    {page === 'input' && <InputPage onAnalyze={handleAnalyze} />}
+                    {page === 'analysis' && <AnalysisPage analysisData={analysisData} onDownload={handleDownload} />}
+                </div>
+            );
+        };
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
