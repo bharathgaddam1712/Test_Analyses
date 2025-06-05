@@ -138,6 +138,3 @@ student-feedback-system/
 - Fork the repository and submit pull requests for new features or bug fixes.
 - Report issues via GitHub Issues.
 
-## License
-
-\[Insert license, e.g., MIT\]
