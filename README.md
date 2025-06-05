@@ -48,11 +48,19 @@ An AI-powered system to analyze student test data from JSON files, generate pers
 - **Page 1: Input Form**
   - Input fields: Student name, examination title, exam date, JSON file upload.
   - Button: "Analyze Your Test" to process data and navigate to the analysis page.
+ ![image](https://github.com/user-attachments/assets/c2107246-9256-4c55-a2e8-4b18635ba7d9)
+
 - **Page 2: Analysis Report**
   - Displays the full PDF content: cover page, introduction, performance breakdown, insights, suggestions, and encouragement.
   - Charts: Subject-wise accuracy and individual subject performance.
   - Button: "Download the PDF" to save the generated report locally.
+  ![image](https://github.com/user-attachments/assets/2d86969c-6b1f-4d69-9be7-1e39fb3484a0)
+
+ 
+
 - **Tech**: React for dynamic UI, Tailwind CSS for styling, Flask backend for API endpoints (`/api/analyze`, `/api/download`).
+
+  
 
 ## Project Structure
 
@@ -124,14 +132,8 @@ student-feedback-system/
 
 - **CLI**: Charts in `output/charts/`, PDF reports in `output/reports/`.
 - **Web**: Interactive report displayed in the browser, downloadable PDF saved locally.
-- Public link: \[Upload to Google Drive or GitHub Pages and insert link\]
+- Public link: [PDF-LINK](https://drive.google.com/file/d/1SPsPnZH7XyahUZ4k08AOAL6XfJfurVyD/view?usp=sharing)
 
-## Development Notes
-
-- Ensure `visualization.py` saves charts with accessible paths (e.g., `/output/charts/`).
-- Secure the Flask backend by sanitizing inputs and limiting file uploads to `.json`.
-- Add tests for the web interface in `tests/` if needed.
-- For production, use a WSGI server (e.g., Gunicorn) and configure CORS appropriately.
 
 ## Contributing
 
