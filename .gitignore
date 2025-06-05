@@ -38,9 +38,7 @@ config/config.py
 
 
 
-# Data files (exclude sensitive JSON inputs)
-data/
-*.json
+
 
 # Flask-specific
 instance/
